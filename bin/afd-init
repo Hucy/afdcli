@@ -1,0 +1,81 @@
+#!/usr/bin/env node
+
+
+var program = require('commander')
+var exists = require('fs').existsSync
+var readdir=require('fs').readdirSync
+var path = require('path')
+var chalk = require('chalk')
+var inquirer = require('inquirer')
+var logger = require('../lib/logger')
+var generate = require('../lib/generate')
+
+/*
+  usage
+ */
+
+program
+  .usage('[project-name]')
+/*
+  help
+ */
+
+ program.on('--help',function(){
+  console.log('Examples:')
+  console.log()
+  console.log(chalk.gray('# create a new project with an official template'))
+  console.log(' $ afd init my-project')
+  console.log()
+ })
+program.parse(process.argv)
+ function help () {
+  program.parse(process.argv)
+  if (program.args.length < 1) return program.help()
+}
+// help()
+
+/**
+ * Padding.
+ */
+
+console.log()
+process.on('exit', function () {
+  console.log()
+})
+
+/**
+ * Settings.
+ */
+
+var rawName = program.args[0]
+var inPlace = !rawName || rawName === '.'
+var name = inPlace ? path.relative('../', process.cwd()) : rawName
+var to = path.resolve(rawName || '.')
+var templates= readdir(process.env.APPDATA+'/npm/node_modules/autocli/templates/')
+
+
+inquirer.prompt([{
+    type: 'confirm',
+    message: inPlace
+      ? 'Generate project in current directory?'
+      : 'Target directory exists. Continue?',
+    name: 'ok',
+    when: exists(to)
+  },{
+    type: 'list',
+    name: 'template',
+    message: 'Please choose the template :',
+    choices: templates,
+    when:function(answers){
+      return !exists(to) || answers.ok
+    }
+  }]).then(function (answers) {
+  // console.log(JSON.stringify(answers, null, '  '));
+  var tmpPath=process.env.APPDATA+'/npm/node_modules/autocli/templates/'+answers.template
+   generate(name,tmpPath , to, function (err) {
+      if (err) logger.fatal(err)
+      console.log()
+      logger.success('Generated "%s".', name)
+    })
+});
+

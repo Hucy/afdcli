@@ -1,0 +1,10 @@
+#!/usr/bin/env node
+
+require('commander')
+  .version(require('../package').version)
+  .usage('<command> [options]')
+  .command('init', 'generate a new project from a template')
+  .command('dev', 'start local Develop environment')
+  .command('pre', 'Pre-Release to the loacal environment')
+  .command('dep', 'deploy to the online environment')
+  .parse(process.argv)
