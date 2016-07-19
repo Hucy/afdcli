@@ -1,0 +1,10 @@
+#!/usr/bin/env node
+
+require('shelljs/global');
+var exists=require('fs').existsSync
+var chalk = require('chalk')
+if(exists('./package.json')&&exists('./config')){
+  exec('npm run dev')
+}else{
+  console.log(chalk.yellow('This folder is not a correct project'))
+}

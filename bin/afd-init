@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-
+require('shelljs/global');
 var program = require('commander')
 var exists = require('fs').existsSync
 var readdir=require('fs').readdirSync
@@ -9,7 +9,8 @@ var chalk = require('chalk')
 var inquirer = require('inquirer')
 var logger = require('../lib/logger')
 var generate = require('../lib/generate')
-
+var execa = require('execa');
+var Listr = require('listr');
 /*
   usage
  */
@@ -71,11 +72,51 @@ inquirer.prompt([{
     }
   }]).then(function (answers) {
   // console.log(JSON.stringify(answers, null, '  '));
-  var tmpPath=process.env.APPDATA+'/npm/node_modules/autocli/templates/'+answers.template
-   generate(name,tmpPath , to, function (err) {
-      if (err) logger.fatal(err)
-      console.log()
+  if(!exists(to) || answers.ok){
+     var tmpPath=process.env.APPDATA+'/npm/node_modules/autocli/templates/'+answers.template
+        const tasks = new Listr([
+    { message: 'generate '+answers.template+' template',
+      task:()=> {
+        return new Promise(function(resolve,reject){
+        generate(name,tmpPath , to, function (err) {
+            if(err){
+              reject(err)
+            }else{
+              resolve()
+            }
+      }) 
+        })
+      }
+
+
+
+
+      
+      },
+    {
+      message:'cd '+to,
+      task:()=>cd(to)
+    },
+    {
+        message: 'Install package dependencies',
+        task: () => execa('npm', ['install'])
+    },
+    {
+        message: 'Git init',
+        task: () => execa('gulp', ['init'])
+    }
+    
+]);
+
+tasks.run().then(function(){
       logger.success('Generated "%s".', name)
-    })
+        }).catch(err => {
+    console.error(err);
+    
+});
+     
+  
+  }
+ 
 });
 
