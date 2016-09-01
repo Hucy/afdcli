@@ -1,9 +1,0 @@
-{
-  
-    "name":"name" ,
-    "description":"des",
-    "author": "author ",
-    "preenv":"preenv",
-    "depenv":"depenv",
-    "completeMessage": "To get started:\n\n  cd {{destDirName}}\n  npm run dev\n\n"
-}

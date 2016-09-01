@@ -9,8 +9,6 @@ var chalk = require('chalk')
 var inquirer = require('inquirer')
 var logger = require('../lib/logger')
 var generate = require('../lib/generate')
-var execa = require('execa');
-var Listr = require('listr');
 /*
   usage
  */
@@ -52,10 +50,34 @@ var rawName = program.args[0]
 var inPlace = !rawName || rawName === '.'
 var name = inPlace ? path.relative('../', process.cwd()) : rawName
 var to = path.resolve(rawName || '.')
-var templates= readdir(process.env.APPDATA+'/npm/node_modules/autocli/templates/')
+/**
+ * 设置模板路劲
+ */
+var templates,
+    templatesPath
+try{
+ templates= readdir('../templates/')
+ templatesPath='../templates/'
+ if(templates.length==0){
+  throw new Error('the templates is null')
+ }
+run()
+}catch(e){
+  console.log(chalk.yellow('Settings not found the template, using the default'))
+  var npmG = exec('npm root -g',{silent:true}).stdout.trim();
+  try{
+    templates=readdir(npmG+'/autocli/templates')
+    templatesPath=npmG+'/autocli/templates/'
+    run()
+  }catch(e){
+    console.log(chalk.red(e))
+  }
+  
+  
+}
 
-
-inquirer.prompt([{
+function run(){
+  inquirer.prompt([{
     type: 'confirm',
     message: inPlace
       ? 'Generate project in current directory?'
@@ -71,52 +93,17 @@ inquirer.prompt([{
       return !exists(to) || answers.ok
     }
   }]).then(function (answers) {
-  // console.log(JSON.stringify(answers, null, '  '));
   if(!exists(to) || answers.ok){
-     var tmpPath=process.env.APPDATA+'/npm/node_modules/autocli/templates/'+answers.template
-        const tasks = new Listr([
-    { message: 'generate '+answers.template+' template',
-      task:()=> {
-        return new Promise(function(resolve,reject){
-        generate(name,tmpPath , to, function (err) {
-            if(err){
-              reject(err)
-            }else{
-              resolve()
-            }
-      }) 
-        })
-      }
-
-
-
-
-      
-      },
-    {
-      message:'cd '+to,
-      task:()=>cd(to)
-    },
-    {
-        message: 'Install package dependencies',
-        task: () => execa('npm', ['install'])
-    },
-    {
-        message: 'Git init',
-        task: () => execa('gulp', ['init'])
-    }
-    
-]);
-
-tasks.run().then(function(){
+     var tmpPath=templatesPath+answers.template
+     generate(name, tmpPath, to, function (err) {
+      if (err) logger.fatal(err)
+      console.log()
       logger.success('Generated "%s".', name)
-        }).catch(err => {
-    console.error(err);
-    
-});
-     
+    })
   
   }
  
 });
+}
+
 

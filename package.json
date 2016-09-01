@@ -1,6 +1,6 @@
 {
   "name": "autocli",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "the cli tool generate files",
   "main": "index.js",
   "scripts": {
@@ -10,7 +10,7 @@
     "cli"
   ],
   "bin": {
-    "afd": "bin/afd"
+    "agi": "bin/agi"
   },
   "author": "hucy",
   "license": "MIT",
@@ -28,9 +28,11 @@
     "inquirer": "^1.0.3",
     "listr": "^0.1.0",
     "metalsmith": "^2.1.0",
+    "minimatch": "^3.0.3",
     "ora": "^0.2.3",
     "read-metadata": "^1.0.0",
-    "shelljs": "^0.7.0"
+    "shelljs": "^0.7.0",
+    "validate-npm-package-name": "^2.2.2"
   },
   "devDependencies": {
     "babel-core": "^6.7.4",

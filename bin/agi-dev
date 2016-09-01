@@ -1,0 +1,44 @@
+#!/usr/bin/env node
+
+var exec = require('child_process').exec;
+var path = require('path')
+var exists=require('fs').existsSync
+var chalk = require('chalk')
+
+if(exists('./build')&&exists('./package.json')&&exists('./config')){
+  if(exists(path.join(process.cwd().split('modules')[0],'/mockserver'))){
+    runDev()
+    runMock()
+  }else{
+    console.log(chalk.blue('No find mockserver'))
+    runDev()
+  }
+ 
+}else{
+  console.log(chalk.yellow('This folder is not a correct project'))
+}
+
+function runDev(){
+
+var dev=exec('npm run dev')
+  dev.stdout.on('data', (data) => {
+  console.log(chalk.cyan("The DevServer:")+`${data}`);
+});
+
+  dev.stderr.on('data', (data) => {
+  console.log(chalk.red("The DevServer:")+`${data}`);
+});
+}
+
+function runMock(){
+  var child = exec('npm start', {
+  cwd:path.resolve(process.cwd(),'../../mockserver/'),
+});
+child.stdout.on('data', (data) => {
+  console.log(chalk.cyan("The MockServer:")+`${data}`);
+});
+
+child.stderr.on('data', (data) => {
+  console.log(chalk.red("The MockServer:")+`${data}`);
+});
+}
